@@ -8,9 +8,7 @@ import {
   MenuItem,
   Paper,
   Select,
-  Slider,
   Stack,
-  Typography,
   styled,
 } from '@mui/material';
 import {
