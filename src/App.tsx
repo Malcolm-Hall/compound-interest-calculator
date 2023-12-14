@@ -9,7 +9,7 @@ import {
   Paper,
   Select,
   Stack,
-  styled,
+  Typography,
 } from '@mui/material';
 import {
   Chart as ChartJS,
@@ -41,44 +41,57 @@ function notNumber(value: string) {
   return Number.isNaN(Number(value));
 }
 
-const InputPaper = styled(Paper)(({ theme }) => ({
-  padding: theme.spacing(4),
-  margin: theme.spacing(4),
-}));
+const randFormatter = new Intl.NumberFormat('en-ZA', {
+  style: 'currency',
+  currency: 'ZAR',
+  maximumFractionDigits: 0,
+});
 
 export default function App() {
   const [step, setStep] = useState(0);
   const incrementStep = () => setStep((it) => it + 1);
   const decrementStep = () => setStep((it) => it - 1);
   return (
-    <Container maxWidth="md">
+    <Container maxWidth="sm">
       {step === 0 && <InputForm onSubmit={incrementStep} />}
       {step === 1 && <InvestmentChart goBack={decrementStep} />}
     </Container>
   );
 }
 
+const contributionData = new Array(12)
+  .fill(0)
+  .map((_, idx) => 500 * 0.94 * (idx + 1) * idx);
+
+const growthData = new Array(12)
+  .fill(0)
+  .map((_, idx) => 500 * 1.6 * (idx + 1) * idx);
+
 function InvestmentChart({ goBack }: any) {
   return (
-    <InputPaper elevation={3}>
+    <Paper elevation={3}>
+      <Stack alignItems="center">
+        <Typography fontSize="1rem" variant="overline">
+          Your investment could be worth
+        </Typography>
+        <Typography fontSize="3rem" color="primary.main">
+          {randFormatter.format(growthData[growthData.length - 1])}
+        </Typography>
+      </Stack>
       <Line
         data={{
           labels: new Array(12).fill(0).map((_, idx) => idx + 1),
           datasets: [
             {
               label: 'Your Contributions',
-              data: new Array(12)
-                .fill(0)
-                .map((_, idx) => 500 * (idx + 1) * idx),
+              data: contributionData,
               backgroundColor: '#162953',
               borderColor: '#162953',
               fill: 'start',
             },
             {
               label: 'Investment Growth',
-              data: new Array(12)
-                .fill(0)
-                .map((_, idx) => 500 * 1.5 * (idx + 1) * idx),
+              data: growthData,
               backgroundColor: '#00ABD0',
               borderColor: '#00ABD0',
               fill: 0,
@@ -86,11 +99,37 @@ function InvestmentChart({ goBack }: any) {
           ],
         }}
         options={{
+          plugins: {
+            legend: {
+              position: 'chartArea',
+              labels: {
+                boxWidth: 15,
+                generateLabels: (c) => {
+                  console.log(c);
+                  return c.data.datasets.map((it, i) => ({
+                    text:
+                      it.label! +
+                      '  ' +
+                      randFormatter.format(
+                        it.data[it.data.length - 1] as number
+                      ),
+                    fillStyle: it.backgroundColor as string,
+                    datasetIndex: i,
+                  }));
+                },
+                sort: (a, b) => b.datasetIndex! - a.datasetIndex!,
+              },
+            },
+          },
           scales: {
             x: {
+              display: false,
+              ticks: { display: false },
               grid: { display: false },
             },
             y: {
+              display: false,
+              ticks: { display: false },
               grid: { display: false },
             },
           },
@@ -101,12 +140,12 @@ function InvestmentChart({ goBack }: any) {
           },
         }}
       />
-      <Stack direction="row-reverse" spacing={1} marginTop={3}>
+      <Stack direction="row-reverse" padding={3}>
         <Button variant="outlined" onClick={() => goBack()}>
           Back
         </Button>
       </Stack>
-    </InputPaper>
+    </Paper>
   );
 }
 
@@ -117,7 +156,7 @@ function InputForm({ onSubmit }: any) {
   const [investmentTerm, setInvestmentTerm] = useState('');
   const [annualInterestRate, setAnnualInterestRate] = useState('');
   return (
-    <InputPaper elevation={3}>
+    <Paper elevation={3} sx={{ padding: 4 }}>
       <FormControl margin="normal" fullWidth>
         <InputLabel htmlFor="initial-amount">Initial Amount</InputLabel>
         <Input
@@ -243,6 +282,6 @@ function InputForm({ onSubmit }: any) {
           Reset
         </Button>
       </Stack>
-    </InputPaper>
+    </Paper>
   );
 }
